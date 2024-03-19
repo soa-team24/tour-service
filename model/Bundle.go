@@ -2,22 +2,27 @@ package model
 
 import (
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
-type Status string
+type BundleStatus string
 
 const (
-	Draft     Status = "draft"
-	Published Status = "published"
-	Archived  Status = "archived"
+	Drafted BundleStatus = "draft"
+	Publish BundleStatus = "published"
+	Archive BundleStatus = "archived"
 )
 
 type Bundle struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uuid.UUID `json:"userId"`
-	Name   string    `json:"name"`
-	Price  float64   `json:"price"`
-	Tours  []int     `json:"tours"`
-	Status Status    `json:"status"`
-	Image  string    `json:"image"`
+	ID     uuid.UUID    `json:"id"`
+	UserID uint32       `json:"userId"`
+	Name   string       `json:"name"`
+	Price  float64      `json:"price"`
+	Status BundleStatus `json:"status"`
+	Image  string       `json:"image"`
+}
+
+func (bundle *Bundle) BeforeCreate(scope *gorm.DB) error {
+	bundle.ID = uuid.New()
+	return nil
 }

@@ -48,7 +48,6 @@ func (service *TourService) Update(tour *model.Tour) error {
 	existingTour.Difficulty = tour.Difficulty
 	existingTour.Price = tour.Price
 	existingTour.Tags = tour.Tags
-	existingTour.Equipment = tour.Equipment
 	existingTour.BicycleTime = tour.BicycleTime
 	existingTour.FootTime = tour.FootTime
 	existingTour.CarTime = tour.CarTime
