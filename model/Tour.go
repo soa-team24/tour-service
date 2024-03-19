@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type TourStatus string
@@ -16,7 +17,7 @@ const (
 
 type Tour struct {
 	ID          uuid.UUID  `json:"id"`
-	AuthorID    uuid.UUID  `json:"authorId"`
+	AuthorID    uint32     `json:"authorId"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
 	PublishTime time.Time  `json:"publishTime"`
@@ -24,12 +25,14 @@ type Tour struct {
 	Image       string     `json:"image"`
 	Difficulty  int        `json:"difficulty"`
 	Price       float64    `json:"price"`
-	Tags        []string   `json:"tags"`
-	Equipment   []int64    `json:"equipment"`
-	CheckPoints []int64    `json:"checkPoints"`
-	Objects     []int64    `json:"objects"`
+	Tags        []string   `gorm:"type:text" json:"tags"`
 	FootTime    float64    `json:"footTime"`
 	BicycleTime float64    `json:"bicycleTime"`
 	CarTime     float64    `json:"carTime"`
-	TotalLength float64    `json:"totalLenght"`
+	TotalLength float64    `json:"totalLength"`
+}
+
+func (tour *Tour) BeforeCreate(scope *gorm.DB) error {
+	tour.ID = uuid.New()
+	return nil
 }
