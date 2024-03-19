@@ -33,11 +33,6 @@ type Tour struct {
 	TotalLength float64    `json:"totalLength"`
 }
 
-func (bundle *Tour) BeforeCreate(scope *gorm.DB) error {
-	bundle.ID = uuid.New()
-	return nil
-}
-
 // SerializeTags serializes the tags field into a JSON string
 func (t *Tour) SerializeTags() (string, error) {
 	serializedTags, err := json.Marshal(t.Tags)
@@ -50,4 +45,8 @@ func (t *Tour) SerializeTags() (string, error) {
 // DeserializeTags deserializes the JSON string into a slice of strings
 func (t *Tour) DeserializeTags(serializedTags string) error {
 	return json.Unmarshal([]byte(serializedTags), &t.Tags)
+}
+func (tour *Tour) BeforeCreate(scope *gorm.DB) error {
+	tour.ID = uuid.New()
+	return nil
 }
