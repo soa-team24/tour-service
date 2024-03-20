@@ -1,19 +1,17 @@
 package model
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
-type TourStatus string
+type TourStatus uint32
 
 const (
-	Draft     TourStatus = "draft"
-	Published TourStatus = "published"
-	Archived  TourStatus = "archived"
+	Draft     TourStatus = 0
+	Published TourStatus = 1
+	Archived  TourStatus = 2
 )
 
 type Tour struct {
@@ -31,22 +29,4 @@ type Tour struct {
 	BicycleTime float64    `json:"bicycleTime"`
 	CarTime     float64    `json:"carTime"`
 	TotalLength float64    `json:"totalLength"`
-}
-
-// SerializeTags serializes the tags field into a JSON string
-func (t *Tour) SerializeTags() (string, error) {
-	serializedTags, err := json.Marshal(t.Tags)
-	if err != nil {
-		return "", err
-	}
-	return string(serializedTags), nil
-}
-
-// DeserializeTags deserializes the JSON string into a slice of strings
-func (t *Tour) DeserializeTags(serializedTags string) error {
-	return json.Unmarshal([]byte(serializedTags), &t.Tags)
-}
-func (tour *Tour) BeforeCreate(scope *gorm.DB) error {
-	tour.ID = uuid.New()
-	return nil
 }

@@ -21,6 +21,15 @@ func (repo *TourReviewRepository) Get(id string) (model.TourReview, error) {
 	return tourReview, nil
 }
 
+func (repo *TourReviewRepository) GetTourReviewsByTourID(tourId string) ([]model.TourReview, error) {
+	var tourReviews []model.TourReview
+	result := repo.DatabaseConnection.Find(&tourReviews, "tour_id = ?", tourId)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return tourReviews, nil
+}
+
 func (repo *TourReviewRepository) GetAll() ([]model.TourReview, error) {
 	var tourReviews []model.TourReview
 	dbResult := repo.DatabaseConnection.Find(&tourReviews)
@@ -48,9 +57,18 @@ func (repo *TourReviewRepository) Update(tourReview *model.TourReview) error {
 }
 
 func (repo *TourReviewRepository) Delete(id string) error {
-	dbResult := repo.DatabaseConnection.Delete(&model.TourReview{}, id)
+	dbResult := repo.DatabaseConnection.Delete(&model.TourReview{}, "id = ?", id)
 	if dbResult.Error != nil {
 		return dbResult.Error
 	}
 	return nil
+}
+
+func (repo *TourReviewRepository) GetTourReviewsForTour(tourId string) ([]model.TourReview, error) {
+	var tourReviews []model.TourReview
+	result := repo.DatabaseConnection.Where("tour_id = ?", tourId).Find(&tourReviews)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return tourReviews, nil
 }

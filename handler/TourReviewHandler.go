@@ -92,3 +92,35 @@ func (handler *TourReviewHandler) GetAll(writer http.ResponseWriter, req *http.R
 	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(tourReviews)
 }
+
+func (handler *TourReviewHandler) GetTourReviewsByTourID(writer http.ResponseWriter, req *http.Request) {
+	idStr := mux.Vars(req)["id"]
+
+	log.Printf("Get tourReviews by tour id: %s", idStr)
+	tourReviews, err := handler.TourReviewService.GetTourReviewsByTourID(idStr)
+	if err != nil {
+		log.Println("Error while retrieving tour reviews:", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(tourReviews)
+}
+
+func (handler *TourReviewHandler) GetAverageGradeForTour(writer http.ResponseWriter, req *http.Request) {
+	idStr := mux.Vars(req)["id"]
+
+	log.Printf("Get tourReviews by tour id: %s", idStr)
+	averageGrade, err := handler.TourReviewService.GetAverageGradeForTour(idStr)
+
+	if err != nil {
+		log.Println("Error while retrieving tour reviews and averageGrade:", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(averageGrade)
+}

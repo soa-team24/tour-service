@@ -47,7 +47,7 @@ func (service *TourReviewService) Update(tourReview *model.TourReview) error {
 
 	err = service.TourReviewRepo.Update(&existingTourReview)
 	if err != nil {
-		return fmt.Errorf("failed to update tour: %v", err)
+		return fmt.Errorf("failed to update tourReview: %v", err)
 	}
 	return nil
 }
@@ -63,4 +63,30 @@ func (service *TourReviewService) Delete(id string) error {
 		return fmt.Errorf("failed to delete tourReview: %v", err)
 	}
 	return nil
+}
+
+func (service *TourReviewService) GetTourReviewsByTourID(tourId string) ([]model.TourReview, error) {
+	tourReviews, err := service.TourReviewRepo.GetTourReviewsByTourID(tourId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve tourReviews for tour with ID %s: %v", tourId, err)
+	}
+	return tourReviews, nil
+}
+
+func (service *TourReviewService) GetAverageGradeForTour(tourId string) (float64, error) {
+	tourReviews, err := service.TourReviewRepo.GetTourReviewsByTourID(tourId)
+	if err != nil {
+		return 0.0, fmt.Errorf("failed to retrieve tourReviews/averageGrade for tour with ID %s: %v", tourId, err)
+	}
+
+	if len(tourReviews) > 0 {
+		totalGrade := 0
+		for _, review := range tourReviews {
+			totalGrade += int(review.Grade)
+		}
+		averageGrade := float64(totalGrade) / float64(len(tourReviews))
+		return averageGrade, nil
+	} else {
+		return 0.0, nil
+	}
 }

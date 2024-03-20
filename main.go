@@ -22,11 +22,11 @@ func initDB() *gorm.DB {
 		return nil
 	}
 
-	database.AutoMigrate(&model.Equipment{}, &model.Checkpoint{}, &model.Tour{}, &model.TourReview{})
-
+	database.AutoMigrate(&model.Equipment{}, &model.Checkpoint{}, &model.Tour{}, &model.TourReview{}, &model.TourProblem{})
+	//database.Exec("INSERT IGNORE INTO tours VALUES ('aec7e123-243d-4a09-a289-75308ea5b7e6', 1, 'Naslov ture', 'Opis ture', '2024-03-19 12:00:00', 1, 'putanja/do/slike.jpg', 3, 2999, 'tag1', 10.5, 26.25, 42.08, 40.5)")
 	return database
 }
-func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.CheckpointHandler, equipmentHandler *handler.EquipmentHandler, tourReviewHandler *handler.TourReviewHandler) {
+func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.CheckpointHandler, equipmentHandler *handler.EquipmentHandler, tourReviewHandler *handler.TourReviewHandler, tourProblemHandler *handler.TourProblemHandler) {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/tour/{id}", tourHandler.Get).Methods("GET")
@@ -45,10 +45,16 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	router.HandleFunc("/equipment/{id}", equipmentHandler.Update).Methods("PUT")
 	router.HandleFunc("/equipment/{id}", equipmentHandler.Delete).Methods("DELETE")
 
-	router.HandleFunc("/tourReview/{id}", tourReviewHandler.Get).Methods("GET")
-	router.HandleFunc("/tourReview/{userId}", tourReviewHandler.Create).Methods("POST")
+	router.HandleFunc("/tourReview/{id}", tourReviewHandler.GetTourReviewsByTourID).Methods("GET")
+	router.HandleFunc("/tourReview", tourReviewHandler.Create).Methods("POST")
 	router.HandleFunc("/tourReview/{id}", tourReviewHandler.Update).Methods("PUT")
 	router.HandleFunc("/tourReview/{id}", tourReviewHandler.Delete).Methods("DELETE")
+	router.HandleFunc("/tourReview/average-grade/{id}", tourReviewHandler.GetAverageGradeForTour).Methods("GET")
+
+	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Get).Methods("GET")
+	router.HandleFunc("/tourProblem", tourProblemHandler.Create).Methods("POST")
+	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Update).Methods("PUT")
+	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Delete).Methods("DELETE")
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"}) // Allow all origins
 	allowedMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
@@ -80,16 +86,19 @@ func main() {
 	equipmentRepo := &repository.EquipmentRepository{DatabaseConnection: database}
 	tourRepo := &repository.TourRepository{DatabaseConnection: database}
 	tourReviewRepo := &repository.TourReviewRepository{DatabaseConnection: database}
+	tourProblemRepo := &repository.TourProblemRepository{DatabaseConnection: database}
 
 	checkpointService := &service.CheckpointService{CheckpointRepo: checkpointRepo}
 	equipmentService := &service.EquipmentService{EquipmentRepo: equipmentRepo}
 	tourService := &service.TourService{TourRepo: tourRepo}
 	tourReviewService := &service.TourReviewService{TourReviewRepo: tourReviewRepo}
+	tourProblemService := &service.TourProblemService{TourProblemRepo: tourProblemRepo}
 
 	checkpointHandler := &handler.CheckpointHandler{CheckpointService: checkpointService}
 	equipmentHandler := &handler.EquipmentHandler{EquipmentService: equipmentService}
 	tourHandler := &handler.TourHandler{TourService: tourService}
 	tourReviewHandler := &handler.TourReviewHandler{TourReviewService: tourReviewService}
+	tourProblemHandler := &handler.TourProblemHandler{TourProblemService: tourProblemService}
 
-	startServer(tourHandler, checkpointHandler, equipmentHandler, tourReviewHandler)
+	startServer(tourHandler, checkpointHandler, equipmentHandler, tourReviewHandler, tourProblemHandler)
 }
