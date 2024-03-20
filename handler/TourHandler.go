@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"tour-service/dto"
 	"tour-service/model"
 	"tour-service/service"
 
@@ -28,22 +29,23 @@ func (handler *TourHandler) Get(writer http.ResponseWriter, req *http.Request) {
 }
 
 func (handler *TourHandler) Create(writer http.ResponseWriter, req *http.Request) {
-	var tour model.Tour
-	err := json.NewDecoder(req.Body).Decode(&tour)
+	var tourDto dto.TourDto
+	err := json.NewDecoder(req.Body).Decode(&tourDto)
 	if err != nil {
 		println("Error while parsing json")
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	err = handler.TourService.Save(&tour)
-	if err != nil {
-		println("Error while creating a new blog")
+	newTour, createErr := handler.TourService.Save(&tourDto)
+	if createErr != nil {
+		println("Error while creating a new tour")
 		writer.WriteHeader(http.StatusExpectationFailed)
 		return
 	}
 	writer.WriteHeader(http.StatusCreated)
 	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(newTour)
 }
 
 func (handler *TourHandler) Update(writer http.ResponseWriter, req *http.Request) {

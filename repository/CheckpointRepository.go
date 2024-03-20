@@ -30,13 +30,13 @@ func (repo *CheckpointRepository) GetAll() ([]model.Checkpoint, error) {
 	return checkpoints, nil
 }
 
-func (repo *CheckpointRepository) Save(checkpoint *model.Checkpoint) error {
+func (repo *CheckpointRepository) Save(checkpoint *model.Checkpoint) (*model.Checkpoint, error) {
 	dbResult := repo.DatabaseConnection.Create(checkpoint)
 	if dbResult.Error != nil {
-		return dbResult.Error
+		return nil, dbResult.Error
 	}
 
-	return nil
+	return checkpoint, nil
 }
 
 func (repo *CheckpointRepository) Update(checkpoint *model.Checkpoint) error {
@@ -48,7 +48,7 @@ func (repo *CheckpointRepository) Update(checkpoint *model.Checkpoint) error {
 }
 
 func (repo *CheckpointRepository) Delete(id string) error {
-	dbResult := repo.DatabaseConnection.Delete(&model.Checkpoint{}, id)
+	dbResult := repo.DatabaseConnection.Delete(&model.Checkpoint{}, "id = ?", id)
 	if dbResult.Error != nil {
 		return dbResult.Error
 	}

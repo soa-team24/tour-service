@@ -36,14 +36,15 @@ func (handler *CheckpointHandler) Create(writer http.ResponseWriter, req *http.R
 		return
 	}
 
-	err = handler.CheckpointService.Save(&checkpoint)
-	if err != nil {
+	newCheckPoint, createErr := handler.CheckpointService.Save(&checkpoint)
+	if createErr != nil {
 		println("Error while creating a new checkpoint")
 		writer.WriteHeader(http.StatusExpectationFailed)
 		return
 	}
 	writer.WriteHeader(http.StatusCreated)
 	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(newCheckPoint)
 }
 
 func (handler *CheckpointHandler) Update(writer http.ResponseWriter, req *http.Request) {

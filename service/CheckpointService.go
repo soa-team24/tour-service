@@ -26,12 +26,12 @@ func (service *CheckpointService) GetAll() ([]model.Checkpoint, error) {
 	return checkpoints, nil
 }
 
-func (service *CheckpointService) Save(checkpoint *model.Checkpoint) error {
-	err := service.CheckpointRepo.Save(checkpoint)
+func (service *CheckpointService) Save(checkpoint *model.Checkpoint) (*model.Checkpoint, error) {
+	checkpoint, err := service.CheckpointRepo.Save(checkpoint)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return checkpoint, nil
 }
 
 func (service *CheckpointService) Update(checkpoint *model.Checkpoint) error {

@@ -48,7 +48,7 @@ func (repo *EquipmentRepository) Update(equipment *model.Equipment) error {
 }
 
 func (repo *EquipmentRepository) Delete(id string) error {
-	dbResult := repo.DatabaseConnection.Delete(&model.Equipment{}, id)
+	dbResult := repo.DatabaseConnection.Delete(&model.Equipment{}, "id = ?", id)
 	if dbResult.Error != nil {
 		return dbResult.Error
 	}

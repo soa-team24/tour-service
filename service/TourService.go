@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"strconv"
+	"tour-service/dto"
 	"tour-service/model"
 	"tour-service/repository"
 )
@@ -26,12 +28,31 @@ func (service *TourService) GetAll() ([]model.Tour, error) {
 	return tours, nil
 }
 
-func (service *TourService) Save(tour *model.Tour) error {
-	err := service.TourRepo.Save(tour)
+func (service *TourService) Save(dto *dto.TourDto) (*model.Tour, error) {
+	difficultyInt, err := strconv.Atoi(dto.Difficulty)
 	if err != nil {
-		return err
+		difficultyInt = 0
 	}
-	return nil
+	tour := &model.Tour{
+		Title:       dto.Name,
+		Description: dto.Description,
+		PublishTime: dto.PublishTime,
+		Status:      model.TourStatus(dto.Status),
+		Image:       dto.Image,
+		Difficulty:  difficultyInt,
+		Price:       dto.Price,
+		FootTime:    dto.FootTime,
+		BicycleTime: dto.BicycleTime,
+		CarTime:     dto.CarTime,
+		TotalLength: dto.TotalLength,
+		AuthorID:    dto.AuthorID,
+	}
+
+	checkpoint, err := service.TourRepo.Save(tour)
+	if err != nil {
+		return nil, err
+	}
+	return checkpoint, nil
 }
 
 func (service *TourService) Update(tour *model.Tour) error {
@@ -47,7 +68,6 @@ func (service *TourService) Update(tour *model.Tour) error {
 	existingTour.Image = tour.Image
 	existingTour.Difficulty = tour.Difficulty
 	existingTour.Price = tour.Price
-	existingTour.Tags = tour.Tags
 	existingTour.BicycleTime = tour.BicycleTime
 	existingTour.FootTime = tour.FootTime
 	existingTour.CarTime = tour.CarTime
