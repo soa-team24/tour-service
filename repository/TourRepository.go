@@ -19,14 +19,14 @@ func CheckDBConnection(db *gorm.DB) error {
 }
 
 func (repo *TourRepository) Get(id string) (model.Tour, error) {
-	blog := model.Tour{}
-	dbResult := repo.DatabaseConnection.First(&blog, "id = ?", id)
+	tour := model.Tour{}
+	dbResult := repo.DatabaseConnection.First(&tour, "id = ?", id)
 
 	if dbResult.Error != nil {
-		return blog, dbResult.Error
+		return tour, dbResult.Error
 	}
 
-	return blog, nil
+	return tour, nil
 }
 
 func (repo *TourRepository) GetAll() ([]model.Tour, error) {

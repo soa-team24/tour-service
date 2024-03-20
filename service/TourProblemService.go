@@ -66,3 +66,11 @@ func (service *TourProblemService) Delete(id string) error {
 	}
 	return nil
 }
+
+func (service *TourProblemService) GetTourProblemsForTourist(touristId uint32) ([]model.TourProblem, error) {
+	tourProblems, err := service.TourProblemRepo.GetTourProblemsForTourist(touristId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve tourProblems for tourist with ID %d: %v", touristId, err)
+	}
+	return tourProblems, nil
+}

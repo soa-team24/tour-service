@@ -54,3 +54,12 @@ func (repo *TourProblemRepository) Delete(id string) error {
 	}
 	return nil
 }
+
+func (repo *TourProblemRepository) GetTourProblemsForTourist(touristIdId uint32) ([]model.TourProblem, error) {
+	var tourProblems []model.TourProblem
+	result := repo.DatabaseConnection.Find(&tourProblems, "tourist_id = ?", touristIdId)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return tourProblems, nil
+}

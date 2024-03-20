@@ -46,13 +46,14 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	router.HandleFunc("/equipment/{id}", equipmentHandler.Update).Methods("PUT")
 	router.HandleFunc("/equipment/{id}", equipmentHandler.Delete).Methods("DELETE")
 
+	router.HandleFunc("/tourReview", tourReviewHandler.GetAll).Methods("GET")
 	router.HandleFunc("/tourReview/{id}", tourReviewHandler.GetTourReviewsByTourID).Methods("GET")
 	router.HandleFunc("/tourReview", tourReviewHandler.Create).Methods("POST")
 	router.HandleFunc("/tourReview/{id}", tourReviewHandler.Update).Methods("PUT")
 	router.HandleFunc("/tourReview/{id}", tourReviewHandler.Delete).Methods("DELETE")
 	router.HandleFunc("/tourReview/average-grade/{id}", tourReviewHandler.GetAverageGradeForTour).Methods("GET")
 
-	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Get).Methods("GET")
+	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.GetTourProblemsForTourist).Methods("GET")
 	router.HandleFunc("/tourProblem", tourProblemHandler.Create).Methods("POST")
 	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Update).Methods("PUT")
 	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Delete).Methods("DELETE")
