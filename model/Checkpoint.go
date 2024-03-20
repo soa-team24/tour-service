@@ -7,7 +7,7 @@ import (
 
 type Checkpoint struct {
 	ID          uuid.UUID `json:"id"`
-	TourID      uint32    `json:"tourId"`
+	TourID      string    `json:"tourId"`
 	Latitude    float64   `json:"latitude"`
 	Longitude   float64   `json:"longitude"`
 	Name        string    `json:"name"`

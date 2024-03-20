@@ -38,13 +38,13 @@ func (repo *TourRepository) GetAll() ([]model.Tour, error) {
 	return tours, nil
 }
 
-func (repo *TourRepository) Save(tour *model.Tour) error {
+func (repo *TourRepository) Save(tour *model.Tour) (*model.Tour, error) {
 	dbResult := repo.DatabaseConnection.Create(tour)
 	if dbResult.Error != nil {
-		return dbResult.Error
+		return nil, dbResult.Error
 	}
 
-	return nil
+	return tour, nil
 }
 
 func (repo *TourRepository) Update(tour *model.Tour) error {
@@ -56,7 +56,7 @@ func (repo *TourRepository) Update(tour *model.Tour) error {
 }
 
 func (repo *TourRepository) Delete(id string) error {
-	dbResult := repo.DatabaseConnection.Delete(&model.Tour{}, id)
+	dbResult := repo.DatabaseConnection.Delete(&model.Tour{}, "id = ?", id)
 	if dbResult.Error != nil {
 		return dbResult.Error
 	}
