@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"tour-service/dto"
 	"tour-service/model"
 	"tour-service/service"
@@ -24,8 +25,24 @@ func (handler *TourHandler) Get(writer http.ResponseWriter, req *http.Request) {
 		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	tourDto := &dto.TourDto{
+		Name:        tour.Title,
+		Description: tour.Description,
+		PublishTime: tour.PublishTime,
+		Status:      int(tour.Status),
+		Image:       tour.Image,
+		Difficulty:  strconv.Itoa(tour.Difficulty),
+		Price:       tour.Price,
+		FootTime:    tour.FootTime,
+		BicycleTime: tour.BicycleTime,
+		CarTime:     tour.CarTime,
+		TotalLength: tour.TotalLength,
+		AuthorID:    tour.AuthorID,
+	}
+
 	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(tour)
+	json.NewEncoder(writer).Encode(tourDto)
 }
 
 func (handler *TourHandler) Create(writer http.ResponseWriter, req *http.Request) {

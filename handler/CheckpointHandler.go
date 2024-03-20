@@ -93,3 +93,19 @@ func (handler *CheckpointHandler) GetAll(writer http.ResponseWriter, req *http.R
 	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(checkpoints)
 }
+
+func (handler *CheckpointHandler) GetCheckpointsByTourID(writer http.ResponseWriter, req *http.Request) {
+	idStr := mux.Vars(req)["id"]
+
+	log.Printf("Get Checkpoints by tour id: %s", idStr)
+	checkpoints, err := handler.CheckpointService.GetCheckpointsByTourID(idStr)
+	if err != nil {
+		log.Println("Error while retrieving Checkpoints:", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(checkpoints)
+}

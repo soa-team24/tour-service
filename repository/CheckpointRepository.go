@@ -54,3 +54,12 @@ func (repo *CheckpointRepository) Delete(id string) error {
 	}
 	return nil
 }
+
+func (repo *CheckpointRepository) GetCheckpointsByTourID(tourId string) ([]model.Checkpoint, error) {
+	var checkpoints []model.Checkpoint
+	result := repo.DatabaseConnection.Find(&checkpoints, "tour_id = ?", tourId)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return checkpoints, nil
+}

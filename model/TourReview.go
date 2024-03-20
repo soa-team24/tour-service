@@ -15,7 +15,7 @@ type TourReview struct {
 	VisitDate  time.Time `json:"visitDate"`
 	ReviewDate time.Time `json:"reviewDate"`
 	Images     string    `json:"images"`
-	TourID     uuid.UUID `json:"tourId"`
+	TourID     string    `json:"tourId"`
 }
 
 func (tourReview *TourReview) BeforeCreate(scope *gorm.DB) error {

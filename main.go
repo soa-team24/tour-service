@@ -39,6 +39,7 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	router.HandleFunc("/checkpoint", checkpointHandler.Create).Methods("POST")
 	router.HandleFunc("/checkpoint/{id}", checkpointHandler.Update).Methods("PUT")
 	router.HandleFunc("/checkpoint/{id}", checkpointHandler.Delete).Methods("DELETE")
+	router.HandleFunc("/checkpointByTourID/{id}", checkpointHandler.GetCheckpointsByTourID).Methods("GET")
 
 	router.HandleFunc("/equipment/{id}", equipmentHandler.Get).Methods("GET")
 	router.HandleFunc("/equipment", equipmentHandler.Create).Methods("POST")

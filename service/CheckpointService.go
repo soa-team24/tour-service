@@ -67,3 +67,11 @@ func (service *CheckpointService) Delete(id string) error {
 	}
 	return nil
 }
+
+func (service *CheckpointService) GetCheckpointsByTourID(tourId string) ([]model.Checkpoint, error) {
+	checkpoints, err := service.CheckpointRepo.GetCheckpointsByTourID(tourId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve checkpoints for tour with ID %s: %v", tourId, err)
+	}
+	return checkpoints, nil
+}
