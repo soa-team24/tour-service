@@ -1,6 +1,7 @@
 package dto
 
 type TourDto struct {
+	Id          string  `json:"id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Status      int     `json:"status"`
@@ -15,3 +16,7 @@ type TourDto struct {
 	Points      int     `json:"points"`
 	Image       string  `json:"image"`
 }
+
+/*func (tourDto *TourDto) ParseDifficultyToInt() (int, error) {
+	return strconv.Atoi(tourDto.Difficulty)
+}*/

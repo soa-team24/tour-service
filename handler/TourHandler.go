@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"tour-service/dto"
-	"tour-service/model"
 	"tour-service/service"
 
 	"github.com/gorilla/mux"
@@ -66,16 +65,27 @@ func (handler *TourHandler) Create(writer http.ResponseWriter, req *http.Request
 }
 
 func (handler *TourHandler) Update(writer http.ResponseWriter, req *http.Request) {
-	var tour model.Tour
-	err := json.NewDecoder(req.Body).Decode(&tour)
+	var tourDto dto.TourDto
+	err := json.NewDecoder(req.Body).Decode(&tourDto)
 	if err != nil {
 		log.Println("Error while parsing JSON:", err)
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	err = handler.TourService.Update(&tour)
+	// Convert difficulty from string to int
+	/*difficulty, err := tourDto.ParseDifficultyToInt()
 	if err != nil {
+		log.Println("Error while parsing difficulty:", err)
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Update the difficulty field in tourDto
+	tourDto.Difficulty = strconv.Itoa(difficulty)*/
+
+	tour, err1 := handler.TourService.Update(&tourDto)
+	if err1 != nil {
 		log.Println("Error while updating the tour:", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
@@ -83,6 +93,7 @@ func (handler *TourHandler) Update(writer http.ResponseWriter, req *http.Request
 
 	writer.WriteHeader(http.StatusOK)
 	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(tour)
 }
 
 func (handler *TourHandler) Delete(writer http.ResponseWriter, req *http.Request) {
@@ -109,5 +120,42 @@ func (handler *TourHandler) GetAll(writer http.ResponseWriter, req *http.Request
 
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(tours)
+}
+
+func (handler *TourHandler) GetToursByAuthor(writer http.ResponseWriter, req *http.Request) {
+	// Uzimanje ID autora iz URL parametra
+	authorID := mux.Vars(req)["authorId"]
+
+	if authorID == "" {
+		log.Println("authorID is empty")
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Pretvaranje authorID u uint32
+	id, err := strconv.ParseUint(authorID, 10, 32)
+	if err != nil {
+		log.Println("Error while parsing authorID:", err)
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	convertedAuthorID := uint32(id)
+
+	// Pozivanje servisa za dohvatanje tura za određenog autora
+	tours, err := handler.TourService.GetToursByAuthor(convertedAuthorID)
+	if err != nil {
+		log.Println("Error while retrieving tours by author:", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Postavljanje HTTP zaglavlja
+	writer.Header().Set("Content-Type", "application/json")
+
+	// Postavljanje status koda odgovora
+	writer.WriteHeader(http.StatusOK)
+
+	// Kodiranje lista tura u JSON format i slanje kao odgovor
 	json.NewEncoder(writer).Encode(tours)
 }

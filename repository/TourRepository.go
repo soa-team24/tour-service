@@ -62,3 +62,12 @@ func (repo *TourRepository) Delete(id string) error {
 	}
 	return nil
 }
+
+func (repo *TourRepository) GetToursByAuthor(authorID uint32) ([]model.Tour, error) {
+	var tours []model.Tour
+	dbResult := repo.DatabaseConnection.Find(&tours, "author_id = ?", authorID)
+	if dbResult.Error != nil {
+		return nil, dbResult.Error
+	}
+	return tours, nil
+}

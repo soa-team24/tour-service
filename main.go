@@ -34,6 +34,7 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	router.HandleFunc("/tour", tourHandler.Create).Methods("POST")
 	router.HandleFunc("/tour/{id}", tourHandler.Update).Methods("PUT")
 	router.HandleFunc("/tour/{id}", tourHandler.Delete).Methods("DELETE")
+	router.HandleFunc("/toursByAuthorId/{authorId}", tourHandler.GetToursByAuthor).Methods("GET")
 
 	router.HandleFunc("/checkpoint/{id}", checkpointHandler.Get).Methods("GET")
 	router.HandleFunc("/checkpoint", checkpointHandler.Create).Methods("POST")

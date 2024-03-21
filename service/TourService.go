@@ -33,6 +33,7 @@ func (service *TourService) Save(dto *dto.TourDto) (*model.Tour, error) {
 	if err != nil {
 		difficultyInt = 0
 	}
+
 	tour := &model.Tour{
 		Title:       dto.Name,
 		Description: dto.Description,
@@ -55,29 +56,34 @@ func (service *TourService) Save(dto *dto.TourDto) (*model.Tour, error) {
 	return checkpoint, nil
 }
 
-func (service *TourService) Update(tour *model.Tour) error {
-	existingTour, err := service.TourRepo.Get(tour.ID.String())
+func (service *TourService) Update(tourDto *dto.TourDto) (*dto.TourDto, error) {
+	existingTour, err := service.TourRepo.Get(tourDto.Id)
 	if err != nil {
-		return fmt.Errorf("failed to find blog with ID %s: %v", tour.ID, err)
+		return nil, fmt.Errorf("failed to find blog with ID %s: %v", tourDto.Id, err)
 	}
 
-	existingTour.Title = tour.Title
-	existingTour.Description = tour.Description
-	existingTour.PublishTime = tour.PublishTime
-	existingTour.Status = tour.Status
-	existingTour.Image = tour.Image
-	existingTour.Difficulty = tour.Difficulty
-	existingTour.Price = tour.Price
-	existingTour.BicycleTime = tour.BicycleTime
-	existingTour.FootTime = tour.FootTime
-	existingTour.CarTime = tour.CarTime
-	existingTour.TotalLength = tour.TotalLength
+	difficulty_int, err := strconv.Atoi(tourDto.Difficulty)
+	if err != nil {
+		difficulty_int = 0
+	}
+
+	existingTour.Title = tourDto.Name
+	existingTour.Description = tourDto.Description
+	existingTour.PublishTime = tourDto.PublishTime
+	existingTour.Status = model.TourStatus(tourDto.Status)
+	existingTour.Image = tourDto.Image
+	existingTour.Difficulty = difficulty_int
+	existingTour.Price = tourDto.Price
+	existingTour.BicycleTime = tourDto.BicycleTime
+	existingTour.FootTime = tourDto.FootTime
+	existingTour.CarTime = tourDto.CarTime
+	existingTour.TotalLength = tourDto.TotalLength
 
 	err = service.TourRepo.Update(&existingTour)
 	if err != nil {
-		return fmt.Errorf("failed to update tour: %v", err)
+		return nil, err
 	}
-	return nil
+	return tourDto, nil
 }
 
 func (service *TourService) Delete(id string) error {
@@ -91,4 +97,12 @@ func (service *TourService) Delete(id string) error {
 		return fmt.Errorf("failed to delete tour: %v", err)
 	}
 	return nil
+}
+
+func (service *TourService) GetToursByAuthor(authorID uint32) ([]model.Tour, error) {
+	tours, err := service.TourRepo.GetToursByAuthor(authorID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve tours by author: %v", err)
+	}
+	return tours, nil
 }
