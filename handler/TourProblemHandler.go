@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"tour-service/model"
 	"tour-service/service"
 
@@ -84,6 +85,23 @@ func (handler *TourProblemHandler) GetAll(writer http.ResponseWriter, req *http.
 	tourProblems, err := handler.TourProblemService.GetAll()
 	if err != nil {
 		log.Println("Error while retrieving TourProblems:", err)
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(tourProblems)
+}
+
+func (handler *TourProblemHandler) GetTourProblemsForTourist(writer http.ResponseWriter, req *http.Request) {
+	idStr := mux.Vars(req)["id"]
+	id, err := strconv.Atoi(idStr)
+	log.Printf("Get TourProblem by tour id: %d", id)
+	log.Printf("parsing ID to integer: %v", err)
+	tourProblems, err := handler.TourProblemService.GetTourProblemsForTourist(uint32(id))
+	if err != nil {
+		log.Println("Error while retrieving tour reviews:", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}

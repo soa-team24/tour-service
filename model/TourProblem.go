@@ -8,16 +8,16 @@ import (
 )
 
 type TourProblem struct {
-	ID                uuid.UUID `json:"id"`
-	ProblemCategory   string    `json:"problemCategory"`
-	ProblemPriority   string    `json:"problemPriority"`
-	Description       string    `json:"description"`
-	TimeStamp         time.Time `json:"timeStamp"`
-	TourId            uuid.UUID `json:"tourId"`
-	IsClosed          bool      `json:"isClosed"`
-	IsResolved        bool      `json:"isResolved"`
-	TouristId         uint32    `json:"touristId"`
-	DeadlineTimeStamp time.Time `json:"deadlineTimeStamp"`
+	ID                uuid.UUID  `json:"id"`
+	ProblemCategory   string     `json:"problemCategory"`
+	ProblemPriority   string     `json:"problemPriority"`
+	Description       string     `json:"description"`
+	TimeStamp         time.Time  `json:"timeStamp"`
+	TourId            string     `json:"tourId"`
+	IsClosed          bool       `json:"isClosed"`
+	IsResolved        bool       `json:"isResolved"`
+	TouristId         uint32     `json:"touristId"`
+	DeadlineTimeStamp *time.Time `json:"deadlineTimeStamp,omitempty"`
 }
 
 func (tourProblem *TourProblem) BeforeCreate(scope *gorm.DB) error {
