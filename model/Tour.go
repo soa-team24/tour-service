@@ -16,7 +16,7 @@ const (
 type Tour struct {
 	ID          uuid.UUID  `json:"id"`
 	AuthorID    uint32     `json:"authorId"`
-	Title       string     `json:"title"`
+	Name        string     `json:"name"`
 	Description string     `json:"description"`
 	PublishTime string     `json:"publishTime"`
 	Status      TourStatus `json:"status"`

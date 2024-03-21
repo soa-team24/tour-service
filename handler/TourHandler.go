@@ -26,7 +26,7 @@ func (handler *TourHandler) Get(writer http.ResponseWriter, req *http.Request) {
 	}
 
 	tourDto := &dto.TourDto{
-		Name:        tour.Title,
+		Name:        tour.Name,
 		Description: tour.Description,
 		PublishTime: tour.PublishTime,
 		Status:      int(tour.Status),

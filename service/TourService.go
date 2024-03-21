@@ -35,7 +35,7 @@ func (service *TourService) Save(dto *dto.TourDto) (*model.Tour, error) {
 	}
 
 	tour := &model.Tour{
-		Title:       dto.Name,
+		Name:        dto.Name,
 		Description: dto.Description,
 		PublishTime: dto.PublishTime,
 		Status:      model.TourStatus(dto.Status),
@@ -67,7 +67,7 @@ func (service *TourService) Update(tourDto *dto.TourDto) (*dto.TourDto, error) {
 		difficulty_int = 0
 	}
 
-	existingTour.Title = tourDto.Name
+	existingTour.Name = tourDto.Name
 	existingTour.Description = tourDto.Description
 	existingTour.PublishTime = tourDto.PublishTime
 	existingTour.Status = model.TourStatus(tourDto.Status)
