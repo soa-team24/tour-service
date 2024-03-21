@@ -53,9 +53,10 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	router.HandleFunc("/tourReview/{id}", tourReviewHandler.Delete).Methods("DELETE")
 	router.HandleFunc("/tourReview/average-grade/{id}", tourReviewHandler.GetAverageGradeForTour).Methods("GET")
 
-	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.GetTourProblemsForTourist).Methods("GET")
+	router.HandleFunc("/tourProblems/{id}", tourProblemHandler.GetTourProblemsForTourist).Methods("GET")
+	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Get).Methods("GET")
 	router.HandleFunc("/tourProblem", tourProblemHandler.Create).Methods("POST")
-	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Update).Methods("PUT")
+	router.HandleFunc("/tourProblem", tourProblemHandler.Update).Methods("PUT")
 	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Delete).Methods("DELETE")
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"}) // Allow all origins
