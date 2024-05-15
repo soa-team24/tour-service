@@ -1,87 +1,71 @@
 package handler
 
 import (
-	"encoding/json"
+	"context"
 	"log"
-	"net/http"
+	"soa/grpc/proto/tour"
 	"strconv"
-	"tour-service/model"
+	"tour-service/mapper"
 	"tour-service/service"
-
-	"github.com/gorilla/mux"
 )
 
 type TourProblemHandler struct {
 	TourProblemService *service.TourProblemService
 }
 
-func (handler *TourProblemHandler) Get(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
+func (handler *TourProblemHandler) GetTourProblem(ctx context.Context, request *tour.GetRequest) (*tour.TourProblemResponse, error) {
+	id := request.Id
 	log.Printf("TourProblem sa id-em %s", id)
 	tourProblem, err := handler.TourProblemService.Get(id)
-	writer.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		writer.WriteHeader(http.StatusNotFound)
-		return
+		println("Database exception: ")
 	}
-	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(tourProblem)
+
+	protoTourProblem := mapper.MapToProtoTourProblem(tourProblem)
+	response := &tour.TourProblemResponse{
+		TourProblem: protoTourProblem,
+	}
+	return response, nil
 }
 
-func (handler *TourProblemHandler) Create(writer http.ResponseWriter, req *http.Request) {
-	var tourProblem model.TourProblem
-	err := json.NewDecoder(req.Body).Decode(&tourProblem)
+func (handler *TourProblemHandler) PostTourProblem(ctx context.Context, request *tour.CreateTourProblemRequest) (*tour.TourProblemResponse, error) {
+	tourProblem := mapper.MapToTourProblem(request.TourProblem)
+
+	err := handler.TourProblemService.Save(tourProblem)
 	if err != nil {
-		println("Error while parsing json")
-		writer.WriteHeader(http.StatusBadRequest)
-		return
+		println("Database exception: ")
 	}
 
-	err = handler.TourProblemService.Save(&tourProblem)
-	if err != nil {
-		println("Error while creating a new TourProblem")
-		writer.WriteHeader(http.StatusExpectationFailed)
-		return
+	protoTourProblem := mapper.MapToProtoTourProblem(tourProblem)
+	response := &tour.TourProblemResponse{
+		TourProblem: protoTourProblem,
 	}
-	writer.WriteHeader(http.StatusCreated)
-	writer.Header().Set("Content-Type", "application/json")
+	return response, nil
 }
 
-func (handler *TourProblemHandler) Update(writer http.ResponseWriter, req *http.Request) {
-	var tourProblem model.TourProblem
-	err := json.NewDecoder(req.Body).Decode(&tourProblem)
-	if err != nil {
-		log.Println("Error while parsing JSON:", err)
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (handler *TourProblemHandler) UpdateTourProblem(ctx context.Context, request *tour.UpdateTourProblemRequest) (*tour.TourProblemResponse, error) {
+	tourProblem := mapper.MapToTourProblem(request.TourProblem)
 
-	err = handler.TourProblemService.Update(&tourProblem)
-	if err != nil {
-		log.Println("Error while updating the TourProblem:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+	handler.TourProblemService.Update(tourProblem)
+	protoTourProblem := mapper.MapToProtoTourProblem(tourProblem)
+	response := &tour.TourProblemResponse{
+		TourProblem: protoTourProblem,
 	}
-
-	writer.WriteHeader(http.StatusOK)
-	writer.Header().Set("Content-Type", "application/json")
+	return response, nil
 }
 
-func (handler *TourProblemHandler) Delete(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
+func (handler *TourProblemHandler) DeleteTourProblem(ctx context.Context, request *tour.GetRequest) (*tour.TourProblemResponse, error) {
+	id := request.Id
 	log.Printf("Deleting TourProblem with id: %s", id)
 
-	err := handler.TourProblemService.Delete(id)
-	if err != nil {
-		log.Println("Error while deleting the TourProblem:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+	handler.TourProblemService.Delete(id)
+	response := &tour.TourProblemResponse{
+		TourProblem: nil,
 	}
-
-	writer.WriteHeader(http.StatusOK)
+	return response, nil
 }
 
-func (handler *TourProblemHandler) GetAll(writer http.ResponseWriter, req *http.Request) {
+/*func (handler *TourProblemHandler) GetAll(writer http.ResponseWriter, req *http.Request) {
 	tourProblems, err := handler.TourProblemService.GetAll()
 	if err != nil {
 		log.Println("Error while retrieving TourProblems:", err)
@@ -92,21 +76,22 @@ func (handler *TourProblemHandler) GetAll(writer http.ResponseWriter, req *http.
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(tourProblems)
-}
+}*/
 
-func (handler *TourProblemHandler) GetTourProblemsForTourist(writer http.ResponseWriter, req *http.Request) {
-	idStr := mux.Vars(req)["id"]
+func (handler *TourProblemHandler) GetTourProblemsForTourist(ctx context.Context, request *tour.GetRequest) (*tour.GetTourProblemsResponse, error) {
+	idStr := request.Id
 	id, err := strconv.Atoi(idStr)
 	log.Printf("Get TourProblem by tour id: %d", id)
 	log.Printf("parsing ID to integer: %v", err)
 	tourProblems, err := handler.TourProblemService.GetTourProblemsForTourist(uint32(id))
 	if err != nil {
-		log.Println("Error while retrieving tour reviews:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+		log.Println("Error while retrieving tours by author:", err)
+		return nil, err
 	}
+	protoTourProblems := mapper.MapSliceToProtoTourProblems(tourProblems)
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(tourProblems)
+	response := &tour.GetTourProblemsResponse{
+		TourProblems: protoTourProblems,
+	}
+	return response, nil
 }

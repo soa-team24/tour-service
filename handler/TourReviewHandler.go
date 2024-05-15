@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"tour-service/model"
+	"soa/grpc/proto/tour"
+	"tour-service/mapper"
 	"tour-service/service"
 
 	"github.com/gorilla/mux"
@@ -27,100 +30,89 @@ func (handler *TourReviewHandler) Get(writer http.ResponseWriter, req *http.Requ
 	json.NewEncoder(writer).Encode(tourReview)
 }
 
-func (handler *TourReviewHandler) Create(writer http.ResponseWriter, req *http.Request) {
-	var tourReview model.TourReview
-	err := json.NewDecoder(req.Body).Decode(&tourReview)
-	if err != nil {
-		println("Error while parsing json")
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (handler *TourReviewHandler) PostTourReview(ctx context.Context, request *tour.CreateTourReviewRequest) (*tour.TourReviewResponse, error) {
+	tourReview := mapper.MapToTourReview(request.TourReview)
 
-	err = handler.TourReviewService.Save(&tourReview)
-	if err != nil {
-		println("Error while creating a new TourReview")
-		writer.WriteHeader(http.StatusExpectationFailed)
-		return
+	handler.TourReviewService.Save(tourReview)
+
+	protoTourReview := mapper.MapToProtoTourReview(tourReview)
+	response := &tour.TourReviewResponse{
+		TourReview: protoTourReview,
 	}
-	writer.WriteHeader(http.StatusCreated)
-	writer.Header().Set("Content-Type", "application/json")
+	return response, nil
 }
 
-func (handler *TourReviewHandler) Update(writer http.ResponseWriter, req *http.Request) {
-	var tourReview model.TourReview
-	err := json.NewDecoder(req.Body).Decode(&tourReview)
-	if err != nil {
-		log.Println("Error while parsing JSON:", err)
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (handler *TourReviewHandler) UpdateTourReview(ctx context.Context, request *tour.UpdateTourReviewRequest) (*tour.TourReviewResponse, error) {
+	tourReview := mapper.MapToTourReview(request.TourReview)
 
-	err = handler.TourReviewService.Update(&tourReview)
-	if err != nil {
-		log.Println("Error while updating the TourReview:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	handler.TourReviewService.Update(tourReview)
 
-	writer.WriteHeader(http.StatusOK)
-	writer.Header().Set("Content-Type", "application/json")
+	protoTourReview := mapper.MapToProtoTourReview(tourReview)
+	response := &tour.TourReviewResponse{
+		TourReview: protoTourReview,
+	}
+	return response, nil
 }
 
-func (handler *TourReviewHandler) Delete(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
+func (handler *TourReviewHandler) DeleteTourReview(ctx context.Context, request *tour.GetRequest) (*tour.TourReviewResponse, error) {
+	id := request.Id
 	log.Printf("Deleting TourReview with id: %s", id)
 
-	err := handler.TourReviewService.Delete(id)
-	if err != nil {
-		log.Println("Error while deleting the TourReview:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+	handler.TourReviewService.Delete(id)
+	response := &tour.TourReviewResponse{
+		TourReview: nil,
 	}
-
-	writer.WriteHeader(http.StatusOK)
+	return response, nil
 }
 
-func (handler *TourReviewHandler) GetAll(writer http.ResponseWriter, req *http.Request) {
+func (handler *TourReviewHandler) GetAllTourReviews(ctx context.Context, request *tour.GetAllRequest) (*tour.GetTourReviewsResponse, error) {
 	tourReviews, err := handler.TourReviewService.GetAll()
 	if err != nil {
-		log.Println("Error while retrieving tourReviews:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+		println("Database exception: ")
 	}
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(tourReviews)
+	if tourReviews == nil {
+		return nil, fmt.Errorf("failed to get blogs")
+	}
+	protoTourReviews := mapper.MapSliceToProtoTourReviews(tourReviews)
+	response := &tour.GetTourReviewsResponse{
+		TourReviews: protoTourReviews,
+	}
+	return response, nil
 }
 
-func (handler *TourReviewHandler) GetTourReviewsByTourID(writer http.ResponseWriter, req *http.Request) {
-	idStr := mux.Vars(req)["id"]
+func (handler *TourReviewHandler) GetTourReviewsByTourID(ctx context.Context, request *tour.GetRequest) (*tour.GetTourReviewsResponse, error) {
+	idStr := request.Id
 
 	log.Printf("Get tourReviews by tour id: %s", idStr)
 	tourReviews, err := handler.TourReviewService.GetTourReviewsByTourID(idStr)
 	if err != nil {
-		log.Println("Error while retrieving tour reviews:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+		log.Println("Error while retrieving tours by author:", err)
+		return nil, err
 	}
+	protoTourReviews := mapper.MapSliceToProtoTourReviews(tourReviews)
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(tourReviews)
+	response := &tour.GetTourReviewsResponse{
+		TourReviews: protoTourReviews,
+	}
+	return response, nil
 }
 
-func (handler *TourReviewHandler) GetAverageGradeForTour(writer http.ResponseWriter, req *http.Request) {
-	idStr := mux.Vars(req)["id"]
+func (handler *TourReviewHandler) GetAverageGradeForTour(ctx context.Context, request *tour.GetRequest) (*tour.GetAverageGradeForTourRequest, error) {
+	idStr := request.Id
 
 	log.Printf("Get tourReviews by tour id: %s", idStr)
 	averageGrade, err := handler.TourReviewService.GetAverageGradeForTour(idStr)
-
 	if err != nil {
-		log.Println("Error while retrieving tour reviews and averageGrade:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+		log.Println("Error while retrieving tours by author:", err)
+		return nil, err
 	}
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(averageGrade)
+
+	//protoAverageGrades := mapper.MapToProtoAverageGrade(averageGrade)
+
+	response := &tour.GetAverageGradeForTourRequest{
+		AverageGrade: float32(averageGrade),
+	}
+	return response, nil
+
 }

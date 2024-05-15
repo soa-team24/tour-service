@@ -2,14 +2,19 @@ package main
 
 import (
 	"log"
-	"net/http"
+	"net"
+
+	//"net/http"
+	"soa/grpc/proto/tour"
 	"tour-service/handler"
 	"tour-service/model"
 	"tour-service/repository"
 	"tour-service/service"
 
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/handlers"
+	//"github.com/gorilla/mux"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -28,9 +33,9 @@ func initDB() *gorm.DB {
 	return database
 }
 func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.CheckpointHandler, equipmentHandler *handler.EquipmentHandler, tourReviewHandler *handler.TourReviewHandler, tourProblemHandler *handler.TourProblemHandler) {
-	router := mux.NewRouter().StrictSlash(true)
+	//router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/tour/{id}", tourHandler.Get).Methods("GET")
+	/*router.HandleFunc("/tour/{id}", tourHandler.Get).Methods("GET")
 	router.HandleFunc("/tour", tourHandler.GetAll).Methods("GET")
 	router.HandleFunc("/tour", tourHandler.Create).Methods("POST")
 	router.HandleFunc("/tour/{id}", tourHandler.Update).Methods("PUT")
@@ -59,9 +64,21 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Get).Methods("GET")
 	router.HandleFunc("/tourProblem", tourProblemHandler.Create).Methods("POST")
 	router.HandleFunc("/tourProblem", tourProblemHandler.Update).Methods("PUT")
-	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Delete).Methods("DELETE")
+	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Delete).Methods("DELETE")*/
 
-	allowedOrigins := handlers.AllowedOrigins([]string{"*"}) // Allow all origins
+	lis, err := net.Listen("tcp", "localhost:8083")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	var opts []grpc.ServerOption
+	grpcServer := grpc.NewServer(opts...)
+
+	tour.RegisterTourServiceServer(grpcServer, tourHandler)
+	reflection.Register(grpcServer)
+	grpcServer.Serve(lis)
+
+	/*allowedOrigins := handlers.AllowedOrigins([]string{"*"}) // Allow all origins
 	allowedMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
 	allowedHeaders := handlers.AllowedHeaders([]string{
 		"Content-Type",
@@ -75,7 +92,7 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	corsRouter := handlers.CORS(allowedOrigins, allowedMethods, allowedHeaders)(router)
 
 	println("Server starting")
-	log.Fatal(http.ListenAndServe(":8081", corsRouter))
+	log.Fatal(http.ListenAndServe(":8081", corsRouter))*/
 
 }
 

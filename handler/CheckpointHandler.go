@@ -1,87 +1,75 @@
 package handler
 
 import (
-	"encoding/json"
+	"context"
 	"log"
-	"net/http"
-	"tour-service/model"
+	"soa/grpc/proto/tour"
+	"tour-service/mapper"
 	"tour-service/service"
-
-	"github.com/gorilla/mux"
 )
 
 type CheckpointHandler struct {
 	CheckpointService *service.CheckpointService
 }
 
-func (handler *CheckpointHandler) Get(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
+func (handler *CheckpointHandler) GetCheckpoint(ctx context.Context, request *tour.GetRequest) (*tour.CheckpointResponse, error) {
+	id := request.Id
 	log.Printf("Checkpoint sa id-em %s", id)
 	checkpoint, err := handler.CheckpointService.Get(id)
-	writer.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		writer.WriteHeader(http.StatusNotFound)
-		return
+		println("Database exception: ")
 	}
-	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(checkpoint)
+
+	protoCheckpoint := mapper.MapToProtoCheckpoint(checkpoint)
+	response := &tour.CheckpointResponse{
+		Checkpoint: protoCheckpoint,
+	}
+	return response, nil
 }
 
-func (handler *CheckpointHandler) Create(writer http.ResponseWriter, req *http.Request) {
-	var checkpoint model.Checkpoint
-	err := json.NewDecoder(req.Body).Decode(&checkpoint)
-	if err != nil {
-		println("Error while parsing json")
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (handler *CheckpointHandler) PostCheckpoint(ctx context.Context, request *tour.CreateCheckpointRequest) (*tour.CheckpointResponse, error) {
 
-	newCheckPoint, createErr := handler.CheckpointService.Save(&checkpoint)
+	checkpoint := mapper.MapToCheckpoint(request.Checkpoint)
+	newCheckPoint, createErr := handler.CheckpointService.Save(checkpoint)
+
 	if createErr != nil {
-		println("Error while creating a new checkpoint")
-		writer.WriteHeader(http.StatusExpectationFailed)
-		return
+		println("Database exception: ")
 	}
-	writer.WriteHeader(http.StatusCreated)
-	writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(writer).Encode(newCheckPoint)
+
+	protoCheckpoint := mapper.MapToProtoCheckpoint(newCheckPoint)
+	response := &tour.CheckpointResponse{
+		Checkpoint: protoCheckpoint,
+	}
+	return response, nil
+
 }
 
-func (handler *CheckpointHandler) Update(writer http.ResponseWriter, req *http.Request) {
-	var checkpoint model.Checkpoint
-	err := json.NewDecoder(req.Body).Decode(&checkpoint)
-	if err != nil {
-		log.Println("Error while parsing JSON:", err)
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (handler *CheckpointHandler) UpdateCheckpoint(ctx context.Context, request *tour.UpdateCheckpointRequest) (*tour.CheckpointResponse, error) {
+	checkpoint := mapper.MapToCheckpoint(request.Checkpoint)
 
-	err = handler.CheckpointService.Update(&checkpoint)
-	if err != nil {
-		log.Println("Error while updating the checkpoint:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	handler.CheckpointService.Update(checkpoint)
 
-	writer.WriteHeader(http.StatusOK)
-	writer.Header().Set("Content-Type", "application/json")
+	protoCheckpoint := mapper.MapToProtoCheckpoint(checkpoint)
+	response := &tour.CheckpointResponse{
+		Checkpoint: protoCheckpoint,
+	}
+	return response, nil
+
 }
 
-func (handler *CheckpointHandler) Delete(writer http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
+func (handler *CheckpointHandler) DeleteCheckpoint(ctx context.Context, request *tour.GetRequest) (*tour.CheckpointResponse, error) {
+	id := request.Id
 	log.Printf("Deleting checkpoint with id: %s", id)
 
-	err := handler.CheckpointService.Delete(id)
-	if err != nil {
-		log.Println("Error while deleting the checkpoint:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+	handler.CheckpointService.Delete(id)
+	response := &tour.CheckpointResponse{
+		Checkpoint: nil,
 	}
+	return response, nil
 
-	writer.WriteHeader(http.StatusOK)
 }
 
-func (handler *CheckpointHandler) GetAll(writer http.ResponseWriter, req *http.Request) {
+/*func (handler *CheckpointHandler) GetAll(writer http.ResponseWriter, req *http.Request) {
 	checkpoints, err := handler.CheckpointService.GetAll()
 	if err != nil {
 		log.Println("Error while retrieving checkpoints:", err)
@@ -92,20 +80,21 @@ func (handler *CheckpointHandler) GetAll(writer http.ResponseWriter, req *http.R
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(checkpoints)
-}
+}*/
 
-func (handler *CheckpointHandler) GetCheckpointsByTourID(writer http.ResponseWriter, req *http.Request) {
-	idStr := mux.Vars(req)["id"]
+func (handler *CheckpointHandler) GetCheckpointsByTourId(ctx context.Context, request *tour.GetRequest) (*tour.GetCheckpointsResponse, error) {
+	idStr := request.Id
 
 	log.Printf("Get Checkpoints by tour id: %s", idStr)
 	checkpoints, err := handler.CheckpointService.GetCheckpointsByTourID(idStr)
 	if err != nil {
-		log.Println("Error while retrieving Checkpoints:", err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
+		log.Println("Error while retrieving tours by author:", err)
+		return nil, err
 	}
+	protoCheckpoints := mapper.MapSliceToProtoCheckpoints(checkpoints)
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	json.NewEncoder(writer).Encode(checkpoints)
+	response := &tour.GetCheckpointsResponse{
+		Checkpoints: protoCheckpoints,
+	}
+	return response, nil
 }
