@@ -6,7 +6,6 @@ require (
 	github.com/google/uuid v1.6.0
 	gorm.io/driver/mysql v1.5.5
 	gorm.io/gorm v1.25.8
-	soa/grpc/proto v0.0.1
 )
 
 require (
@@ -28,4 +27,3 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 )
 
-replace soa/grpc/proto => /app/proto

@@ -3,7 +3,7 @@ package mapper
 import (
 	"tour-service/model"
 
-	"soa/grpc/proto/tour"
+	"tour-service/proto/tour"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

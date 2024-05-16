@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"soa/grpc/proto/tour"
 	"tour-service/mapper"
+	"tour-service/proto/tour"
 	"tour-service/service"
 
 	"github.com/gorilla/mux"

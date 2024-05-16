@@ -3,7 +3,7 @@ package mapper
 import (
 	"tour-service/model"
 
-	"soa/grpc/proto/tour"
+	"tour-service/proto/tour"
 )
 
 func MapSliceToProtoToursPointer(modelTours []*model.Tour) []*tour.Tour {

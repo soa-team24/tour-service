@@ -3,11 +3,14 @@ package main
 import (
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	//"net/http"
-	"soa/grpc/proto/tour"
 	"tour-service/handler"
 	"tour-service/model"
+	"tour-service/proto/tour"
 	"tour-service/repository"
 	"tour-service/service"
 
@@ -66,17 +69,27 @@ func startServer(tourHandler *handler.TourHandler, checkpointHandler *handler.Ch
 	router.HandleFunc("/tourProblem", tourProblemHandler.Update).Methods("PUT")
 	router.HandleFunc("/tourProblem/{id}", tourProblemHandler.Delete).Methods("DELETE")*/
 
-	lis, err := net.Listen("tcp", "localhost:8083")
+	lis, err := net.Listen("tcp", ":8000")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
+	grpcServer := grpc.NewServer()
+	reflection.Register(grpcServer)
 
 	tour.RegisterTourServiceServer(grpcServer, tourHandler)
-	reflection.Register(grpcServer)
-	grpcServer.Serve(lis)
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatal("server error: ", err)
+		}
+	}()
+
+	stopCh := make(chan os.Signal)
+	signal.Notify(stopCh, syscall.SIGTERM)
+
+	<-stopCh
+
+	grpcServer.Stop()
 
 	/*allowedOrigins := handlers.AllowedOrigins([]string{"*"}) // Allow all origins
 	allowedMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})

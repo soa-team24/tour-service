@@ -2,8 +2,7 @@ package mapper
 
 import (
 	"tour-service/model"
-
-	"soa/grpc/proto/tour"
+	"tour-service/proto/tour"
 )
 
 func MapSliceToProtoCheckpoints(modelCheckpoints []model.Checkpoint) []*tour.Checkpoint {

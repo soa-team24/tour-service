@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 	"log"
-	"soa/grpc/proto/tour"
 	"strconv"
 	"tour-service/mapper"
+	"tour-service/proto/tour"
 	"tour-service/service"
 )
 

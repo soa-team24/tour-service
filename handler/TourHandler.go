@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"soa/grpc/proto/tour"
 	"strconv"
 	"tour-service/dto"
 	"tour-service/mapper"
+	"tour-service/proto/tour"
 	"tour-service/service"
 )
 
